@@ -65,6 +65,7 @@ function App() {
         }
       }
 
+      // eslint-disable-next-line no-debugger, no-restricted-syntax
       debugger
 
       // Finish!
