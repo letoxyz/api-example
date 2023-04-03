@@ -33,6 +33,22 @@
   }
 }
 
+.error {
+  border-color: red;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+}
+
+input {
+  display: block;
+  padding: 8px;
+  border-radius: 12px;
+  margin: 8px auto;
+}
+
 .card {
   padding: 2em;
 }

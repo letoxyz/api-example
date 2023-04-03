@@ -1,33 +1,64 @@
+import { BrowserProvider, Signer } from 'ethers'
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { isValidEthereumAddress } from './helpers'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [provider, setProvider] = useState<BrowserProvider | null>(null)
+  const [signer, setSigner] = useState<Signer | null>(null)
+
+  const [targetWallet, setTargetWallet] = useState<string | null>(null)
+  const [walletError, setWalletError] = useState<string | null>(null)
+
+  const connectWallet = async () => {
+    try {
+      const provider = new BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      setProvider(provider)
+      setSigner(signer)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleTargetWalletChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const wallet = e.target.value
+    setTargetWallet(wallet)
+
+    if (wallet && !isValidEthereumAddress(wallet)) {
+      setWalletError('Invalid Ethereum address')
+    } else {
+      setWalletError(null)
+    }
+  }
 
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Leto integration example</h1>
+      {/* Auth button */}
+      {!signer && (<button type='button' onClick={connectWallet}>Connect wallet</button>)}
+
+      {/* Flow */}
+      {signer && (
+        <div>
+          <h2>Send money</h2>
+          <input
+            type='text'
+            placeholder='Target wallet'
+            onChange={handleTargetWalletChange}
+            className={walletError ? 'error' : ''}
+          />
+          {walletError && <p className="error-message">{walletError}</p>}
+          <button
+            type='button'
+            onClick={() => console.log('Send money to', targetWallet)}
+            disabled={!targetWallet || !!walletError}
+          >
+            Send
+          </button>
+
+        </div>
+      )}
     </div>
   )
 }
