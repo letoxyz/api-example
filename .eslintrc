@@ -1,0 +1,18 @@
+{
+  "root": true,
+  "extends": ["@antfu"],
+  "rules": {
+    "react/prop-types": "off",
+    "brace-style": ["error", "1tbs"],
+    "@typescript-eslint/brace-style": ["error", "1tbs"],
+    "curly": ["error", "all"],
+    "no-console": [
+      "error",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+    "@typescript-eslint/comma-dangle": ["error", "never"]
+  }
+}
