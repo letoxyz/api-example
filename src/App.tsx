@@ -3,21 +3,21 @@ import { BrowserProvider } from 'ethers'
 import type { ChangeEvent } from 'react'
 import { useState } from 'react'
 
+// 🚧 ETHERS 6.1.0 PATCH (signTypedData is broken – https://github.com/ethers-io/ethers.js/issues/3836) 🚧
 import './patch'
 
 import './App.css'
 
-import { checkNeedAllowance, gaslessTransfer, getAllowances, getRoute, permit, setAllowance } from './flow'
-import { gaslessExecute } from './flow/gaslessExecute'
-import { checkTransferRoute, isValidEthereumAddress } from './helpers'
+import { checkNeedAllowance, gasless, getAllowances, getRoute, permit, setAllowance } from './flow'
+import { isValidEthereumAddress } from './helpers'
 import { STEPS } from './constants'
 
 function App() {
-  const [provider, setProvider] = useState<BrowserProvider | null>(null)
   const [signer, setSigner] = useState<JsonRpcSigner | null>(null)
 
   const [targetWallet, setTargetWallet] = useState<string | null>(null)
   const [walletError, setWalletError] = useState<string | null>(null)
+  const [successHash, setSuccessHash] = useState<string | null>(null)
 
   const [step, setStep] = useState(0)
 
@@ -25,7 +25,6 @@ function App() {
     try {
       const provider = new BrowserProvider(window.ethereum)
       const signer = await provider.getSigner()
-      setProvider(provider)
       setSigner(signer)
     } catch (e) {
       console.error(e)
@@ -40,7 +39,7 @@ function App() {
 
     try {
       const address = await signer.getAddress()
-      const amount = '4' // 🚧 Hardcode, in real app you should get amount from user input (e.g. input[type=number]) 🚧
+      const amount = '0.1' // 🚧 Hardcode, in real app you should get amount from user input (e.g. input[type=number]) 🚧
 
       setStep(1)
       const { allowances } = await getAllowances(address)
@@ -58,12 +57,12 @@ function App() {
         }
       ])
 
-      let allowanceResult: Signature | undefined
+      let permitResult: Signature | undefined
 
       if (isNeedAllowance) {
         setStep(5)
         try {
-          allowanceResult = await permit(route, allowances, signer)
+          permitResult = await permit(route, allowances, signer)
         } catch (e) {
           console.error(e)
           // Permit failed, try to approve
@@ -72,20 +71,15 @@ function App() {
       }
 
       setStep(6)
-      const isTransferRoute = checkTransferRoute(route)
 
-      let resultHash: string
-      if (isTransferRoute) {
-        resultHash = await gaslessTransfer(route, signer, allowances, allowanceResult)
-      } else {
-        resultHash = await gaslessExecute(route, signer, allowances, allowanceResult)
-      }
+      const { txHash } = await gasless(route, signer, allowances, permitResult)
 
       // eslint-disable-next-line no-console
-      console.log('Transaction hash:', resultHash)
+      console.log('Transaction hash:', txHash)
 
       // Finish!
-      setStep(0)
+      setStep(7)
+      setSuccessHash(txHash)
     } catch (error) {
       console.error(error)
       setStep(0)
@@ -136,6 +130,13 @@ function App() {
             </div>
           )}
 
+          {successHash && (
+            <div className="success">
+              <p>
+                Success! Transaction hash: {successHash}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -9,7 +9,8 @@ const STEPS = [
   'Allowance check...',
   'Prepare transaction...',
   'Set allowance...',
-  'Sign transaction...'
+  'Sign transaction...',
+  'Success!'
 ]
 
 const ERC2612_TOKENS: TPermitToken[] = [
