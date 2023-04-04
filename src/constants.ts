@@ -1,6 +1,16 @@
 import type { TPermitToken, TPermitTokens } from './types/permit'
 
-const API_URL = 'https://api.staging.leto.xyz/gia/'
+const API_URL = 'https://gia.leto.xyz/'
+
+const STEPS = [
+  'Initial',
+  'Get allowances from backend...',
+  'Fetch route...',
+  'Allowance check...',
+  'Prepare transaction...',
+  'Set allowance...',
+  'Sign transaction...'
+]
 
 const ERC2612_TOKENS: TPermitToken[] = [
   {
@@ -71,4 +81,26 @@ const PermitMessage = [
   { name: 'deadline', type: 'uint256' }
 ]
 
-export { API_URL, SUPPORTED_TOKENS, MAX_UINT256, EIP712PermitDomains, DaiPermitMessage, PermitMessage }
+const TypesTransfer = {
+  TransferCall: [
+    { name: 'token', type: 'address' },
+    { name: 'to', type: 'address' },
+    { name: 'amount', type: 'uint256' },
+    { name: 'fee', type: 'uint256' },
+    { name: 'nonce', type: 'uint256' }
+  ]
+}
+
+const TypesExecute = {
+  ExecutionCall: [
+    { name: 'token', type: 'address' },
+    { name: 'amount', type: 'uint256' },
+    { name: 'quoter', type: 'address' },
+    { name: 'quoteData', type: 'bytes' },
+    { name: 'fee', type: 'uint256' },
+    { name: 'executionData', type: 'bytes' },
+    { name: 'value', type: 'uint256' }
+  ]
+}
+
+export { API_URL, STEPS, SUPPORTED_TOKENS, MAX_UINT256, EIP712PermitDomains, DaiPermitMessage, PermitMessage, TypesTransfer, TypesExecute }

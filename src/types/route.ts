@@ -27,7 +27,7 @@ type TToken = {
 }
 
 type TGiaRoute = {
-  approveTx: TSimpleTxData | null
+  approveTx: TSimpleTxData
   estimateTimeSeconds: number
   fromToken: TToken
   gasless: {

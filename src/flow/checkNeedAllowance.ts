@@ -1,14 +1,14 @@
+import { checkTransferRoute } from '../helpers'
 import type { TAllowance, TGiaContractName } from '../types/allowance'
 import type { TGiaRoute } from '../types/route'
 
 function getAllowance(route: TGiaRoute, allowances: TAllowance[]) {
-  const fromAddress = route.fromToken.address
-  const toAddress = route.toToken.address
+  const { address, chainId } = route.fromToken
 
-  const contractName: TGiaContractName = fromAddress === toAddress ? 'ViaGaslessRelay' : 'ViaRouter'
+  const contractName: TGiaContractName = checkTransferRoute(route) ? 'ViaGaslessRelay' : 'ViaRouter'
 
   return allowances.find(
-    allowance => allowance.contractName === contractName && allowance.tokenAddress === fromAddress && allowance.chainId === route.fromToken.chainId
+    a => a.contractName === contractName && a.tokenAddress === address && a.chainId === chainId
   )
 }
 

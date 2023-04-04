@@ -1,4 +1,5 @@
 export * from './checkNeedAllowance'
+export * from './gaslessTransfer'
 export * from './getAllowances'
 export * from './getRoute'
 export * from './permit'

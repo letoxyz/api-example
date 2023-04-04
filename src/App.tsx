@@ -3,10 +3,14 @@ import { BrowserProvider } from 'ethers'
 import type { ChangeEvent } from 'react'
 import { useState } from 'react'
 
+import './patch'
+
 import './App.css'
 
-import { checkNeedAllowance, getAllowances, getRoute, permit, setAllowance } from './flow'
-import { isValidEthereumAddress } from './helpers'
+import { checkNeedAllowance, gaslessTransfer, getAllowances, getRoute, permit, setAllowance } from './flow'
+import { gaslessExecute } from './flow/gaslessExecute'
+import { checkTransferRoute, isValidEthereumAddress } from './helpers'
+import { STEPS } from './constants'
 
 function App() {
   const [provider, setProvider] = useState<BrowserProvider | null>(null)
@@ -47,15 +51,17 @@ function App() {
       setStep(3)
       const isNeedAllowance = await checkNeedAllowance(route, allowances)
 
+      setStep(4)
       await signer.provider.send('wallet_switchEthereumChain', [
         {
           chainId: `0x${route.fromToken.chainId.toString(16)}`
         }
       ])
 
-      let allowanceResult: Signature | null = null
+      let allowanceResult: Signature | undefined
 
       if (isNeedAllowance) {
+        setStep(5)
         try {
           allowanceResult = await permit(route, allowances, signer)
         } catch (e) {
@@ -65,8 +71,18 @@ function App() {
         }
       }
 
-      // eslint-disable-next-line no-debugger, no-restricted-syntax
-      debugger
+      setStep(6)
+      const isTransferRoute = checkTransferRoute(route)
+
+      let resultHash: string
+      if (isTransferRoute) {
+        resultHash = await gaslessTransfer(route, signer, allowances, allowanceResult)
+      } else {
+        resultHash = await gaslessExecute(route, signer, allowances, allowanceResult)
+      }
+
+      // eslint-disable-next-line no-console
+      console.log('Transaction hash:', resultHash)
 
       // Finish!
       setStep(0)
@@ -112,13 +128,10 @@ function App() {
             Send
           </button>
 
-          {/* Progress */}
           {step > 0 && (
             <div className="progress">
               <p>
-                {step === 1 && 'Get allowances from backend...'}
-                {step === 2 && 'Fetch route...'}
-                {step === 3 && 'Allowance check...'}
+                {STEPS[step]}
               </p>
             </div>
           )}
